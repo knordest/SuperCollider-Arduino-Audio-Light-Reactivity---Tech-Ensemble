@@ -1,1 +1,1 @@
-# SuperCollider-Arduino-Audio-Light-Reactivity---Tech-Ensemble
+# SuperCollider-Arduino-Audio-Light-Reactivity - Tech-Ensemble
