@@ -2,7 +2,7 @@ s.boot;
 
 // Open the serial port (adjust "COM7" to your Arduino's port)
 (
-~port = SerialPort("/dev/tty.usbmodem213101", 115200); // Use the correct port for your setup
+~port = SerialPort("/dev/ttyACM0", 115200); // Use the correct port for your setup
 
 // Check if the port opens successfully
 if (~port.isNil.not && ~port.isOpen) {
