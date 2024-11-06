@@ -1,0 +1,59 @@
+s.boot;
+
+// Open the serial port (adjust "COM7" to your Arduino's port)
+(
+~port = SerialPort("/dev/ttyACM0", 115200); // Use the correct port for your setup
+
+// Check if the port opens successfully
+if (~port.isNil.not && ~port.isOpen) {
+    "Serial port is open and ready.".postln;
+} {
+    "Error: Serial port could not be opened.".error;
+};
+)
+
+// Define a Node Proxy to capture the amplitude and send it to the language
+(
+Ndef(\input, {
+    var in, amp,processed;
+    in = SoundIn.ar(0); // Input from audio interface channel 1
+	processed = DelayC.ar(in, 2,0.5,0.8);
+	// Out.ar(0,processed);
+	amp = Amplitude.kr(processed);
+	amp = (amp * 255).clip(10, 255); // Scale amplitude to 0-255
+
+	//(amp).postln;
+
+
+//amp = amp.linexp(0, 1, 10, 255);
+    SendReply.kr(Impulse.kr(20), '/amp', amp); // Send data 20 times per second
+	// Silent.ar(1); // No audio output needed
+	Out.ar(0,processed);
+}).play;
+)
+
+// s.options.numOutputBusChannels
+
+// Set up an OSCdef to receive the amplitude data from the server and send it over serial
+(
+OSCdef(\receiveAmp, { |msg|
+    var amp, intAmp;
+    // Extract the amplitude value from the OSC message
+    amp = msg[3];
+    intAmp = amp.round(1).asInteger;// Round and convert to integer
+
+	amp = amp.linexp(0, 255, 10, 255);
+    // Debug: Print the received amplitude
+    ("Received amplitude: " ++ intAmp).postln;
+
+    // Check if port is open and send amplitude over serial
+    if (~port.notNil and: ~port.isOpen) {
+        ~port.put(intAmp); // Send as a single byte
+    } {
+        "Serial port is not open.".warn;
+    }
+}, '/amp');
+)
+
+
+
